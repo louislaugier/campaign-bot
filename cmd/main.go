@@ -1,12 +1,16 @@
 package main
 
 import (
+	"os"
+
 	"github.com/joho/godotenv"
-	"github.com/louislaugier/campaign-bot/crons"
+	crons "github.com/louislaugier/campaign-bot/internal"
 )
 
 func main() {
-	godotenv.Load()
+	if os.Getenv("ENV") == "dev" {
+		godotenv.Load()
+	}
 
 	crons.Schedule()
 }

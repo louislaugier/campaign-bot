@@ -2,11 +2,12 @@ package crons
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"time"
 
-	brevo "github.com/louislaugier/campaign-bot/internal"
+	brevo "github.com/louislaugier/campaign-bot/internal/pkg"
 )
 
 var executedToday bool
@@ -15,17 +16,14 @@ func Schedule() {
 	// location := time.FixedZone("UTC+5", 5*60*60)  // UTC +5 hours
 	location := time.FixedZone("UTC+5:30", 5*60*60+30*60) // UTC +5 hours 30 minutes
 
-	go sendCampaigns()
-
 	for {
 		now := time.Now().In(location)
-		isExactlyEightOClock := now.Hour() == 8 && now.Minute() == 0 && now.Second() == 0
+		isEightOClock := now.Hour() == 8 && now.Minute() == 00
 
-		if isExactlyEightOClock && !executedToday {
+		if isEightOClock && !executedToday {
 			executedToday = true
 			go sendCampaigns()
 		}
-
 		if now.Hour() != 8 || now.Minute() != 0 {
 			executedToday = false
 		}
@@ -35,13 +33,23 @@ func Schedule() {
 }
 
 func sendCampaigns() {
+	log.Println("Sending all campaigns now.")
+
 	accountsCount, _ := strconv.Atoi(os.Getenv("ACCOUNTS_COUNT"))
 
-	for i := 0; i < accountsCount; i++ {
+	for i := 1; i < accountsCount+1; i++ {
 		apiKey := os.Getenv(fmt.Sprintf("KEY%d", i))
-
 		cl := brevo.NewBrevoClient(apiKey)
 
-		brevo.SendCampaign(cl)
+		err := brevo.SendCampaign(cl)
+		if err != nil {
+			log.Println(err)
+			if i == accountsCount {
+				return
+			}
+			continue
+		}
 	}
+
+	log.Println("Campaigns sent successfully.")
 }

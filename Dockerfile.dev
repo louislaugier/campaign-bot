@@ -8,6 +8,4 @@ COPY . .
 
 RUN go mod download && go install github.com/cosmtrek/air@latest
 
-WORKDIR /go/src/campaign-bot/cmd
-
-CMD ["air", "."]
+CMD ["air", "-c", ".air.toml"]
