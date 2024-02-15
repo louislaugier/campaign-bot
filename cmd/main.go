@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -12,5 +14,13 @@ func main() {
 		godotenv.Load()
 	}
 
-	crons.Schedule()
+	go crons.Schedule()
+
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "OK")
+	})
+
+	fmt.Println("Server is listening on port 8080...")
+	http.ListenAndServe(":8080", nil)
 }
