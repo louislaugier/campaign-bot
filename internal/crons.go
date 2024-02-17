@@ -20,7 +20,7 @@ func Schedule() {
 		now := time.Now().In(location)
 		isEightOClock := now.Hour() == 8 && now.Minute() == 00
 
-		if isEightOClock && !executedToday {
+		if !isEightOClock && !executedToday {
 			executedToday = true
 			go sendCampaigns()
 		}
@@ -37,16 +37,13 @@ func sendCampaigns() {
 
 	accountsCount, _ := strconv.Atoi(os.Getenv("ACCOUNTS_COUNT"))
 
-	for i := 1; i < accountsCount+1; i++ {
+	for i := 1; i <= accountsCount; i++ {
 		apiKey := os.Getenv(fmt.Sprintf("KEY%d", i))
 		cl := brevo.NewBrevoClient(apiKey)
 
 		err := brevo.SendCampaign(cl)
 		if err != nil {
 			log.Println(err)
-			if i == accountsCount {
-				return
-			}
 			continue
 		}
 	}
