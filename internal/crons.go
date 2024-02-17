@@ -20,7 +20,7 @@ func Schedule() {
 		now := time.Now().In(location)
 		isEightOClock := now.Hour() == 8 && now.Minute() == 00
 
-		if !isEightOClock && !executedToday {
+		if isEightOClock && !executedToday {
 			executedToday = true
 			go sendCampaigns()
 		}
