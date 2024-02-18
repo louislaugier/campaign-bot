@@ -1,10 +1,9 @@
 package crons
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"strconv"
+	"strings"
 	"time"
 
 	brevo "github.com/louislaugier/campaign-bot/internal/pkg"
@@ -20,7 +19,7 @@ func Schedule() {
 		now := time.Now().In(location)
 		isEightOClock := now.Hour() == 8 && now.Minute() == 00
 
-		if isEightOClock && !executedToday {
+		if !isEightOClock && !executedToday {
 			executedToday = true
 			go sendCampaigns()
 		}
@@ -35,11 +34,10 @@ func Schedule() {
 func sendCampaigns() {
 	log.Println("Sending all campaigns now.")
 
-	accountsCount, _ := strconv.Atoi(os.Getenv("ACCOUNTS_COUNT"))
+	keys := strings.Split(os.Getenv("KEYS"), ",")
 
-	for i := 1; i <= accountsCount; i++ {
-		apiKey := os.Getenv(fmt.Sprintf("KEY%d", i))
-		cl := brevo.NewBrevoClient(apiKey)
+	for _, key := range keys {
+		cl := brevo.NewBrevoClient(key)
 
 		err := brevo.SendCampaign(cl)
 		if err != nil {
