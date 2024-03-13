@@ -32,17 +32,33 @@ func Schedule() {
 }
 
 func sendCampaigns() {
-	log.Println("Sending all campaigns now.")
-
-	keys := strings.Split(os.Getenv("KEYS"), ",")
-
-	for _, key := range keys {
-		cl := brevo.NewBrevoClient(key)
+	sendCampaign := func(APIKey string) error {
+		cl := brevo.NewBrevoClient(APIKey)
 
 		err := brevo.SendCampaign(cl)
 		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	log.Println("Sending all campaigns now.")
+
+	keysEnv := os.Getenv("KEYS")
+
+	keys := strings.Split(keysEnv, ",")
+
+	if len(keys) > 0 {
+		for _, key := range keys {
+			if err := sendCampaign(key); err != nil {
+				log.Println(err)
+				continue
+			}
+		}
+	} else if keysEnv != "" {
+		if err := sendCampaign(keysEnv); err != nil {
 			log.Println(err)
-			continue
 		}
 	}
 
